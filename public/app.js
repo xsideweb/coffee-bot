@@ -169,6 +169,9 @@
     const confirmBtn = document.getElementById('btn-confirm');
     confirmBtn.style.display = data.initiatorId === user.id ? 'flex' : 'none';
     confirmBtn.onclick = confirmCollection;
+    const cancelVoteBtn = document.getElementById('btn-cancel-vote');
+    cancelVoteBtn.style.display = data.initiatorId === user.id ? 'flex' : 'none';
+    cancelVoteBtn.onclick = cancelCollection;
     document.getElementById('btn-close').onclick = () => tg?.close?.();
   }
 
@@ -271,7 +274,9 @@
 
   async function cancelCollection() {
     const btn = document.getElementById('btn-cancel');
-    btn.disabled = true;
+    const btnVote = document.getElementById('btn-cancel-vote');
+    if (btn) btn.disabled = true;
+    if (btnVote) btnVote.disabled = true;
     try {
       await api.post('/api/collection/cancel', {
         chatId: Number(chatId),
@@ -282,7 +287,8 @@
     } catch (e) {
       showError(e.message || 'Ошибка');
     } finally {
-      btn.disabled = false;
+      if (btn) btn.disabled = false;
+      if (btnVote) btnVote.disabled = false;
     }
   }
 
