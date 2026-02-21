@@ -7,7 +7,7 @@ const MINUTES_OPTIONS = [15, 30, 45, 60];
 function getMiniAppMessage(chatId, botUsername) {
   const link = `https://t.me/${botUsername}?startapp=${chatId}`;
   return {
-    text: `☕ Нажмите ссылку, чтобы открыть приложение «Сбор на кофе»:\n\n☕ <a href="${link}">Сбор на кофе</a>`,
+    text: `Перейди по ссылке, чтобы начать экстренный сбор в Культ:\n\n<a href="${link}">Начать срочный сбор</a>`,
     extra: { parse_mode: 'HTML' },
   };
 }
@@ -24,7 +24,7 @@ function formatMinutes(m) {
 /** Клавиатура "Сбор на кофе" в группе */
 export function keyboardStartCollection() {
   return Markup.inlineKeyboard([
-    [Markup.button.callback('☕ Сбор на кофе', 'coffee_start')],
+    [Markup.button.callback('☕ Начать срочный сбор', 'coffee_start')],
   ]);
 }
 
@@ -43,11 +43,11 @@ export function keyboardTimeOptions(chatId) {
 function keyboardVote(chatId, initiatorId) {
   const buttons = [
     [
-      Markup.button.callback('✅ Участвую', `coffee_vote_${chatId}_yes`),
-      Markup.button.callback('❌ Не смогу', `coffee_vote_${chatId}_no`),
+      Markup.button.callback('✅ Иду', `coffee_vote_${chatId}_yes`),
+      Markup.button.callback('❌ Не иду', `coffee_vote_${chatId}_no`),
     ],
   ];
-  buttons.push([Markup.button.callback('🔒 Подтвердить сбор', `coffee_confirm_${chatId}`)]);
+  buttons.push([Markup.button.callback('🔒 Подтвердить срочный сбор', `coffee_confirm_${chatId}`)]);
   return Markup.inlineKeyboard(buttons);
 }
 
@@ -59,13 +59,13 @@ function voteMessageText(collection) {
   const namesYes = votesYes.map(([, v]) => v.name).join(', ') || '—';
   const namesNo = votesNo.map(([, v]) => v.name).join(', ') || '—';
   const lines = [
-    `☕ Сбор на кофе в ${at}`,
+    `Срочный сбор в Культ в ${at}`,
     `Инициатор: ${collection.initiatorName}`,
     '',
-    `✅ Участвуют (${votesYes.length}): ${namesYes}`,
-    `❌ Не смогут (${votesNo.length}): ${namesNo}`,
+    `✅ Кто идет (${votesYes.length}): ${namesYes}`,
+    `❌ Кто не идет (${votesNo.length}): ${namesNo}`,
     '',
-    'Нажмите кнопку ниже. Инициатор нажимает «Подтвердить сбор», когда все проголосовали.',
+    'Нажмите кнопку ниже. Инициатор нажимает «Подтвердить срочный сбор», когда все ответили.',
   ];
   return lines.join('\n');
 }
@@ -219,18 +219,18 @@ export function setupBot(token, options = {}) {
       return ctx.answerCbQuery('Сбор уже завершён.');
     }
     if (collection.initiatorId !== userId) {
-      return ctx.answerCbQuery('Подтвердить сбор может только инициатор.');
+      return ctx.answerCbQuery('Подтвердить срочный сбор может только инициатор.');
     }
     collection.confirmed = true;
     const atStr = formatTime(collection.at);
     const participants = [...collection.votes.entries()].filter(([, v]) => v.vote === 'yes');
     const names = participants.map(([, v]) => v.name).join(', ');
-    const text = `🔒 Сбор подтверждён! Встречаемся в ${atStr}. Участники: ${names || '—'}`;
+    const text = `🔒 Срочный сбор подтверждён! Встречаемся в ${atStr}. Участники: ${names || '—'}`;
     try {
       await ctx.telegram.editMessageText(chatId, collection.messageId, null, text, []);
     } catch (_) {}
     scheduleTimer(ctx, chatId, collection);
-    await ctx.answerCbQuery('Сбор подтверждён!');
+    await ctx.answerCbQuery('Срочный сбор подтверждён!');
   });
 
   return bot;

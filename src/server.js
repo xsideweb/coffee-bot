@@ -89,9 +89,9 @@ export function createApp(bot, options = {}) {
     if (baseUrl) {
       const username = await getBotUsername();
       const appLink = `https://t.me/${username}?startapp=${cid}`;
-      text = `☕ Сбор на кофе в ${atStr}. <a href="${appLink}">Откройте приложение</a>, чтобы проголосовать.`;
+      text = `Срочный сбор в Культ! Ответь в приложении! <a href="${appLink}">${appLink}</a>`;
     } else {
-      text = `☕ Сбор на кофе в ${atStr}. Откройте приложение, чтобы проголосовать.`;
+      text = `Срочный сбор в Культ в ${atStr}. Откройте приложение, чтобы ответить.`;
     }
     try {
       await bot.telegram.sendMessage(cid, text, baseUrl ? { parse_mode: 'HTML' } : undefined);
@@ -102,7 +102,7 @@ export function createApp(bot, options = {}) {
   });
 
   // API: голос
-  app.post('/api/collection/vote', (req, res) => {
+  app.post('/api/collection/vote', async (req, res) => {
     const { chatId, userId, userName, vote } = req.body;
     if (chatId == null || userId == null || !vote) {
       return res.status(400).json({ error: 'chatId, userId, vote required' });
@@ -116,6 +116,12 @@ export function createApp(bot, options = {}) {
     if (c.confirmed) return res.status(409).json({ error: 'Голосование закрыто' });
     const name = userName || `User ${userId}`;
     c.votes.set(Number(userId), { vote, name });
+    try {
+      const msg = vote === 'yes'
+        ? `Ничего себе ${name} идет!`
+        : `${name} не хочет идти в Культ 😢`;
+      await bot.telegram.sendMessage(cid, msg);
+    } catch (e) {}
     return res.json(getCollectionForApi(cid));
   });
 
@@ -139,7 +145,7 @@ export function createApp(bot, options = {}) {
     try {
       await bot.telegram.sendMessage(
         cid,
-        `🔒 Сбор подтверждён! Встречаемся в ${atStr}. Участники: ${names || '—'}`
+        `🔒 Срочный сбор подтверждён! Встречаемся в ${atStr}. Участники: ${names || '—'}`
       );
     } catch (e) {}
     const delay = Math.max(0, c.at - Date.now());
@@ -168,7 +174,7 @@ export function createApp(bot, options = {}) {
     }
     deleteCollection(cid);
     try {
-      await bot.telegram.sendMessage(cid, '❌ Сбор на кофе отменён.');
+      await bot.telegram.sendMessage(cid, 'Сбор оказался не срочный. Отмена.');
     } catch (e) {}
     return res.json({ ok: true });
   });
