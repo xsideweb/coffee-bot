@@ -73,7 +73,7 @@
   MINUTES.forEach((m) => {
     const btn = document.createElement('button');
     btn.type = 'button';
-    btn.className = 'btn';
+    btn.className = 'time-btn';
     btn.textContent = m === 60 ? '1 час' : m + ' мин';
     btn.onclick = async () => {
       btn.disabled = true;
@@ -100,14 +100,26 @@
 
   function renderVote(data) {
     document.getElementById('vote-meta').textContent =
-      'В ' + formatTime(data.at) + '. Инициатор: ' + data.initiatorName;
+      'В ' + formatTime(data.at) + ' · Инициатор: ' + data.initiatorName;
     const yesList = document.getElementById('vote-yes-list');
     const noList = document.getElementById('vote-no-list');
-    yesList.innerHTML = data.votes.filter((v) => v.vote === 'yes').map((v) => '<li>' + v.name + '</li>').join('') || '<li>—</li>';
-    noList.innerHTML = data.votes.filter((v) => v.vote === 'no').map((v) => '<li>' + v.name + '</li>').join('') || '<li>—</li>';
+    const yesVotes = data.votes.filter((v) => v.vote === 'yes');
+    const noVotes = data.votes.filter((v) => v.vote === 'no');
+    yesList.innerHTML = yesVotes.length
+      ? yesVotes.map((v) => '<li><span class="badge badge-yes">✓</span>' + escapeHtml(v.name) + '</li>').join('')
+      : '<li class="empty">Пока никого</li>';
+    noList.innerHTML = noVotes.length
+      ? noVotes.map((v) => '<li><span class="badge badge-no">✕</span>' + escapeHtml(v.name) + '</li>').join('')
+      : '<li class="empty">—</li>';
     const confirmBtn = document.getElementById('btn-confirm');
-    confirmBtn.style.display = data.initiatorId === user.id ? 'block' : 'none';
+    confirmBtn.style.display = data.initiatorId === user.id ? 'flex' : 'none';
     confirmBtn.onclick = confirmCollection;
+  }
+
+  function escapeHtml(s) {
+    const div = document.createElement('div');
+    div.textContent = s;
+    return div.innerHTML;
   }
 
   async function refresh() {

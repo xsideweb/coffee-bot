@@ -4,7 +4,7 @@ import { createApp } from './server.js';
 
 const token = process.env.BOT_TOKEN;
 if (!token) {
-  console.error('Задайте BOT_TOKEN в .env (скопируйте из .env.example)');
+  console.error('BOT_TOKEN не задан. Локально: создайте .env из .env.example. На Railway: Variables → Add Variable → BOT_TOKEN = токен от @BotFather');
   process.exit(1);
 }
 

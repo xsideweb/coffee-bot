@@ -98,18 +98,22 @@ export function setupBot(token, options = {}) {
   const { baseUrl } = options;
   const bot = new Telegraf(token);
 
-  // В группе: при команде /start — кнопка Mini App или старая клавиатура
-  bot.command('start', async (ctx) => {
+  // Сообщение с кнопкой запуска Mini App в группе
+  const sendAppButton = async (ctx) => {
     const chatId = ctx.chat.id;
     if (ctx.chat.type === 'private') {
-      return ctx.reply('Добавьте бота в группу и там напишите /start — откроется кнопка «Сбор на кофе».');
+      return ctx.reply('Добавьте бота в группу и там напишите /start — появится кнопка для запуска приложения.');
     }
     if (baseUrl) {
-      await ctx.reply('Нажмите, чтобы открыть приложение и начать сбор на кофе:', keyboardMiniApp(chatId, baseUrl));
+      await ctx.reply('☕ Нажмите кнопку ниже, чтобы открыть приложение «Сбор на кофе» — выбрать время, проголосовать и подтвердить сбор.', keyboardMiniApp(chatId, baseUrl));
     } else {
       await ctx.reply('Нажмите, чтобы начать сбор на кофе:', keyboardStartCollection());
     }
-  });
+  };
+
+  bot.command('start', sendAppButton);
+  bot.command('coffee', sendAppButton);
+  bot.command('app', sendAppButton);
 
   // Показать кнопку "Сбор на кофе" при первом добавлении в группу можно через greeting
   bot.on('message', async (ctx, next) => {
