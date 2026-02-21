@@ -3,11 +3,11 @@ import { getCollection, setCollection, deleteCollection, setTimer } from './stat
 
 const MINUTES_OPTIONS = [15, 30, 45, 60];
 
-/** Клавиатура с кнопкой Mini App (требуется baseUrl) */
+/** Клавиатура с кнопкой Mini App (требуется baseUrl). Формат без лишних полей — иначе Telegram: BUTTON_TYPE_INVALID */
 function keyboardMiniApp(chatId, baseUrl) {
   const url = `${baseUrl.replace(/\/$/, '')}?chatId=${chatId}`;
   return Markup.inlineKeyboard([
-    [Markup.button.webApp('☕ Сбор на кофе', url)],
+    [{ text: '☕ Сбор на кофе', web_app: { url } }],
   ]);
 }
 
