@@ -14,6 +14,49 @@
 
 ---
 
+## Деплой с GitHub (развернуть в интернете)
+
+Репозиторий уже на GitHub — дальше разверните приложение на хостинге. Ниже два варианта (достаточно одного).
+
+### Вариант 1: Railway
+
+1. Зайдите на [railway.app](https://railway.app) и войдите через **GitHub**.
+2. **New Project** → **Deploy from GitHub repo** → выберите репозиторий с coffee bot.
+3. Railway сам определит Node.js и запустит `npm start`. Дождитесь первого деплоя.
+4. В проекте откройте ваш **сервис** → вкладка **Variables** → **Add Variable**:
+   - `BOT_TOKEN` = токен от @BotFather  
+   - `BASE_URL` = пока не трогайте.
+5. Вкладка **Settings** → секция **Networking** → **Generate Domain**. Скопируйте URL (например `https://coffee-bot-production-xxxx.up.railway.app`).
+6. Вернитесь в **Variables** и задайте:
+   - `BASE_URL` = этот URL **без слеша в конце** (например `https://coffee-bot-production-xxxx.up.railway.app`).
+7. Сохраните переменные — Railway перезапустит приложение. Готово: бот и Mini App работают по этому адресу.
+
+Порт на Railway задаётся автоматически, **PORT** в переменные добавлять не нужно.
+
+### Вариант 2: Render
+
+1. Зайдите на [render.com](https://render.com) и войдите через **GitHub**.
+2. **New** → **Web Service** → подключите репозиторий с coffee bot.
+3. Настройки:
+   - **Build Command:** `npm install`
+   - **Start Command:** `npm start`
+   - **Instance Type:** можно оставить Free.
+4. В блоке **Environment** добавьте переменные:
+   - `BOT_TOKEN` = токен от @BotFather  
+   - `BASE_URL` = пока оставьте пустым или временное значение.
+5. Нажмите **Create Web Service**. После деплоя Render покажет URL вида `https://ваше-имя.onrender.com`.
+6. В **Environment** измените `BASE_URL` на этот URL **без слеша в конце** и сохраните. Render перезапустит сервис.
+
+Порт Render задаёт сам через переменную **PORT** — в коде уже используется `process.env.PORT`, ничего доп. настраивать не нужно.
+
+### После деплоя
+
+1. Добавьте бота в группу Telegram.
+2. В группе отправьте **/start** — под сообщением появится кнопка **«☕ Сбор на кофе»**.
+3. Нажмите её — откроется Mini App по вашему **BASE_URL**. Если открывается и показывается выбор времени, деплой прошёл успешно.
+
+---
+
 ## Полная инструкция: как подключить в Telegram
 
 ### Шаг 1. Создать бота в BotFather

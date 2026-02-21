@@ -1,0 +1,4 @@
+# Railway использует npm ci по умолчанию; при рассинхроне lock-файла сборка падает.
+# Переключаем на npm install, чтобы установка проходила по package.json.
+[phases.install]
+cmds = ["npm install"]
