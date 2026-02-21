@@ -15,12 +15,12 @@ const bot = setupBot(token, { baseUrl });
 const app = createApp(bot);
 
 const server = app.listen(port, async () => {
-  console.log('☕ Сервер запущен на порту', port);
+  console.log('☕ COFFEE_BOT v2 — Сервер на порту', port);
   if (baseUrl) {
     console.log('   Mini App URL:', baseUrl);
     const webhookUrl = `${baseUrl}${getWebhookPath()}`;
     await bot.telegram.setWebhook(webhookUrl);
-    console.log('   Бот в режиме webhook:', webhookUrl);
+    console.log('   Бот в режиме WEBHOOK (без 409):', webhookUrl);
   } else {
     console.log('   BASE_URL не задан — бот в режиме polling (только один экземпляр).');
     await bot.launch();
