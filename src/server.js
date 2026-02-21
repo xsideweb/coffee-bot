@@ -23,6 +23,14 @@ function formatAtInTZ(date, timeZone) {
 
 export function createApp(bot, options = {}) {
   const { baseUrl } = options;
+  let cachedBotUsername = null;
+  const getBotUsername = async () => {
+    if (cachedBotUsername) return cachedBotUsername;
+    const me = await bot.telegram.getMe();
+    cachedBotUsername = me.username;
+    return cachedBotUsername;
+  };
+
   const app = express();
   app.use(express.json());
 
@@ -79,7 +87,8 @@ export function createApp(bot, options = {}) {
     const atStr = formatAtInTZ(at, timeZone);
     let text;
     if (baseUrl) {
-      const appLink = `${baseUrl}?chatId=${cid}`;
+      const username = await getBotUsername();
+      const appLink = `https://t.me/${username}?startapp=${cid}`;
       text = `☕ Сбор на кофе в ${atStr}. <a href="${appLink}">Откройте приложение</a>, чтобы проголосовать.`;
     } else {
       text = `☕ Сбор на кофе в ${atStr}. Откройте приложение, чтобы проголосовать.`;

@@ -21,6 +21,14 @@ const server = app.listen(port, async () => {
     const webhookUrl = `${baseUrl}${getWebhookPath()}`;
     await bot.telegram.setWebhook(webhookUrl);
     console.log('   Бот в режиме WEBHOOK (без 409):', webhookUrl);
+    try {
+      await bot.telegram.setChatMenuButton({
+        menuButton: { type: 'web_app', text: 'Открыть приложение', web_app: { url: baseUrl } },
+      });
+      console.log('   Кнопка меню бота: «Открыть приложение»');
+    } catch (e) {
+      console.warn('   setChatMenuButton:', e.message);
+    }
   } else {
     console.log('   BASE_URL не задан — бот в режиме polling (только один экземпляр).');
     await bot.launch();

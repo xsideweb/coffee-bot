@@ -7,104 +7,104 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
       --tg-theme-bg-color: #1a1a1a;
       --tg-theme-text-color: #fff;
       --tg-theme-button-color: #7c3aed;
       --tg-theme-button-text-color: #fff;
-      --tg-theme-secondary-bg-color: #2d2d2d;
+      --tg-theme-secondary-bg-color: #252525;
       --app-bg: var(--tg-theme-bg-color);
       --app-text: var(--tg-theme-text-color);
-      --app-text-muted: rgba(255,255,255,0.65);
+      --app-text-muted: rgba(255,255,255,0.5);
       --app-surface: var(--tg-theme-secondary-bg-color);
       --app-accent: #7c3aed;
-      --app-accent-soft: rgba(124, 58, 237, 0.25);
-      --app-radius: 16px;
-      --app-radius-sm: 12px;
-      --app-shadow: 0 4px 24px rgba(0,0,0,0.15);
-      --app-transition: 0.2s ease;
+      --app-accent-soft: rgba(124, 58, 237, 0.2);
+      --app-radius: 12px;
+      --app-radius-sm: 10px;
+      --app-border: 1px solid rgba(255,255,255,0.06);
+      --app-transition: 0.15s ease;
     }
     @media (prefers-color-scheme: light) {
       :root {
-        --app-text-muted: rgba(0,0,0,0.55);
-        --app-accent-soft: rgba(124, 58, 237, 0.18);
+        --tg-theme-secondary-bg-color: #f5f5f5;
+        --app-text-muted: rgba(0,0,0,0.5);
+        --app-border: 1px solid rgba(0,0,0,0.06);
       }
     }
     * { box-sizing: border-box; }
     body {
-      font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       margin: 0;
       padding: 0;
       background: var(--app-bg);
       color: var(--app-text);
       min-height: 100vh;
       -webkit-font-smoothing: antialiased;
-      padding-bottom: env(safe-area-inset-bottom, 20px);
+      padding-bottom: env(safe-area-inset-bottom, 24px);
     }
     .app {
-      max-width: 420px;
+      max-width: 400px;
       margin: 0 auto;
-      padding: 20px 16px;
+      padding: 24px 20px;
     }
-    .screen { display: none; animation: fadeIn 0.25s ease; }
+    .screen { display: none; animation: fadeIn 0.2s ease; }
     .screen.active { display: block; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
     .header {
       text-align: center;
-      margin-bottom: 28px;
+      margin-bottom: 32px;
     }
     .header-icon {
-      font-size: 48px;
-      margin-bottom: 8px;
+      font-size: 32px;
+      margin-bottom: 12px;
       line-height: 1;
+      opacity: 0.9;
     }
     .header h1 {
-      font-size: 1.5rem;
-      font-weight: 700;
-      margin: 0 0 4px;
-      letter-spacing: -0.02em;
+      font-size: 1.35rem;
+      font-weight: 600;
+      margin: 0 0 6px;
+      letter-spacing: -0.03em;
     }
     .header p {
       margin: 0;
-      font-size: 0.9rem;
+      font-size: 0.875rem;
       color: var(--app-text-muted);
-      font-weight: 500;
+      font-weight: 400;
     }
 
     .card {
       background: var(--app-surface);
       border-radius: var(--app-radius);
       padding: 20px;
-      margin-bottom: 16px;
-      box-shadow: var(--app-shadow);
+      margin-bottom: 12px;
+      border: var(--app-border);
     }
     .card-title {
-      font-size: 0.75rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
+      font-size: 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.04em;
       color: var(--app-text-muted);
-      margin: 0 0 12px;
+      margin: 0 0 10px;
     }
 
     .card-time { padding: 24px; }
     .time-input-wrap {
       display: flex;
       align-items: center;
-      gap: 12px;
-      min-height: 56px;
-      padding: 0 4px;
+      min-height: 52px;
+      padding: 0 14px;
       background: var(--app-bg);
-      border: 2px solid rgba(255,255,255,0.12);
+      border: var(--app-border);
       border-radius: var(--app-radius-sm);
       transition: border-color var(--app-transition), box-shadow var(--app-transition);
     }
     .time-input-wrap:focus-within {
       border-color: var(--app-accent);
-      box-shadow: 0 0 0 3px var(--app-accent-soft);
+      box-shadow: 0 0 0 2px var(--app-accent-soft);
     }
     .time-input-wrap .time-input {
       flex: 1;
@@ -128,12 +128,20 @@
     }
     .btn-create { margin-top: 20px; }
     .btn-close-app {
-      margin-top: 16px;
+      width: 100%;
+      margin-top: 12px;
+      min-height: 48px;
       background: transparent;
       color: var(--app-text-muted);
-      border: 1px solid rgba(255,255,255,0.2);
+      border: 1px solid var(--app-border);
+      border-radius: var(--app-radius-sm);
+      font-family: inherit;
       font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: border-color var(--app-transition), color var(--app-transition);
     }
+    .btn-close-app:hover { border-color: var(--app-text-muted); color: var(--app-text); }
     .btn-cancel {
       width: 100%;
       margin-top: 12px;
@@ -144,27 +152,27 @@
     .vote-buttons {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-top: 20px;
+      gap: 10px;
+      margin-top: 16px;
     }
     .btn {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
-      min-height: 52px;
-      padding: 14px 20px;
+      gap: 6px;
+      min-height: 48px;
+      padding: 12px 18px;
       border: none;
       border-radius: var(--app-radius-sm);
       font-family: inherit;
-      font-size: 1rem;
-      font-weight: 600;
+      font-size: 0.9375rem;
+      font-weight: 500;
       cursor: pointer;
-      transition: transform var(--app-transition), opacity var(--app-transition);
+      transition: opacity var(--app-transition);
     }
-    .btn:hover { transform: scale(1.02); }
-    .btn:active { transform: scale(0.98); }
-    .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+    .btn:hover { opacity: 0.92; }
+    .btn:active { opacity: 0.85; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
     .btn-primary {
       background: var(--tg-theme-button-color);
       color: var(--tg-theme-button-text-color);
@@ -191,8 +199,9 @@
       align-items: center;
       gap: 10px;
       padding: 10px 0;
-      border-bottom: 1px solid rgba(255,255,255,0.06);
+      border-bottom: var(--app-border);
       font-weight: 500;
+      font-size: 0.9375rem;
     }
     .participants li:last-child { border-bottom: none; }
     .participants .badge {
@@ -211,35 +220,38 @@
 
     .countdown-box {
       text-align: center;
-      padding: 32px 20px;
+      padding: 28px 20px;
       background: var(--app-accent-soft);
+      border: var(--app-border);
       border-radius: var(--app-radius);
       margin: 20px 0;
     }
     .countdown-box .label {
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       color: var(--app-text-muted);
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
     .countdown-box .value {
-      font-size: 2rem;
-      font-weight: 700;
+      font-size: 1.75rem;
+      font-weight: 600;
       color: var(--app-accent);
       letter-spacing: -0.02em;
     }
 
     .error-box {
-      background: rgba(255,100,100,0.15);
+      background: rgba(255,100,100,0.1);
       color: #f66;
-      padding: 20px;
-      border-radius: var(--app-radius);
+      padding: 16px 20px;
+      border-radius: var(--app-radius-sm);
+      border: 1px solid rgba(255,100,100,0.2);
       text-align: center;
-      font-weight: 500;
+      font-size: 0.9rem;
     }
     .loading {
       text-align: center;
-      padding: 48px 20px;
+      padding: 40px 20px;
       color: var(--app-text-muted);
+      font-size: 0.9rem;
     }
     .loading::after {
       content: '';
