@@ -90,30 +90,33 @@
       margin: 0 0 12px;
     }
 
-    .time-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
+    .time-picker-row {
+      display: flex;
+      flex-direction: column;
       gap: 12px;
     }
-    .time-btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 56px;
-      padding: 14px;
-      border: none;
+    .time-input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 2px solid rgba(255,255,255,0.15);
       border-radius: var(--app-radius-sm);
       font-family: inherit;
-      font-size: 1rem;
+      font-size: 1.25rem;
       font-weight: 600;
-      cursor: pointer;
-      background: var(--app-accent-soft);
-      color: var(--app-accent);
-      transition: transform var(--app-transition), background var(--app-transition), color var(--app-transition);
+      background: var(--app-bg);
+      color: var(--app-text);
+      transition: border-color var(--app-transition);
     }
-    .time-btn:hover { transform: scale(1.02); }
-    .time-btn:active { transform: scale(0.98); }
-    .time-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+    .time-input:focus {
+      outline: none;
+      border-color: var(--app-accent);
+    }
+    .btn-cancel {
+      width: 100%;
+      margin-top: 12px;
+      background: rgba(255,100,100,0.2);
+      color: #f66;
+    }
 
     .vote-buttons {
       display: grid;
@@ -237,11 +240,14 @@
       <div class="header">
         <div class="header-icon">☕</div>
         <h1>Сбор на кофе</h1>
-        <p>Через сколько минут встречаемся?</p>
+        <p>Укажите время встречи</p>
       </div>
       <div class="card">
-        <p class="card-title">Время сбора</p>
-        <div class="time-grid" id="time-grid"></div>
+        <p class="card-title">Во сколько встречаемся?</p>
+        <div class="time-picker-row">
+          <input type="time" id="time-input" class="time-input" min="" step="300">
+          <button type="button" class="btn btn-primary" id="btn-create">Создать сбор</button>
+        </div>
       </div>
     </div>
     <div id="screen-vote" class="screen">
@@ -274,6 +280,7 @@
         <p class="label">До встречи осталось</p>
         <p class="value" id="countdown">—</p>
       </div>
+      <button type="button" class="btn btn-cancel" id="btn-cancel" style="display:none">❌ Отменить сбор</button>
     </div>
     <div id="screen-error" class="screen">
       <div class="header">

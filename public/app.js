@@ -70,31 +70,50 @@
     throw new Error('no chatId');
   }
 
-  const MINUTES = [15, 30, 45, 60];
-  const timeGrid = document.getElementById('time-grid');
-  MINUTES.forEach((m) => {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'time-btn';
-    btn.textContent = m === 60 ? '1 час' : m + ' мин';
-    btn.onclick = async () => {
-      btn.disabled = true;
-      try {
-        await api.post('/api/collection', {
-          chatId: Number(chatId),
-          initiatorId: user.id,
-          initiatorName: user.name,
-          minutes: m,
-        });
-        await refresh();
-      } catch (e) {
-        showError(e.message || 'Ошибка создания сбора');
-      } finally {
-        btn.disabled = false;
-      }
-    };
-    timeGrid.appendChild(btn);
-  });
+  const timeInput = document.getElementById('time-input');
+  const btnCreate = document.getElementById('btn-create');
+
+  function setTimeInputMin() {
+    const now = new Date();
+    const minMins = 5;
+    const next = new Date(now.getTime() + minMins * 60 * 1000);
+    const h = String(next.getHours()).padStart(2, '0');
+    const m = String(next.getMinutes()).padStart(2, '0');
+    timeInput.min = h + ':' + m;
+  }
+  setTimeInputMin();
+
+  function minutesFromTimeInput() {
+    const [h, min] = (timeInput.value || '').split(':').map(Number);
+    if (h == null || min == null || isNaN(h) || isNaN(min)) return null;
+    const now = new Date();
+    let target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, min, 0);
+    if (target <= now) target = new Date(target.getTime() + 24 * 60 * 60 * 1000);
+    return Math.round((target - now) / 60000);
+  }
+
+  btnCreate.onclick = async () => {
+    const minutes = minutesFromTimeInput();
+    if (minutes == null || minutes < 1) {
+      showError('Выберите время встречи');
+      return;
+    }
+    btnCreate.disabled = true;
+    try {
+      await api.post('/api/collection', {
+        chatId: Number(chatId),
+        initiatorId: user.id,
+        initiatorName: user.name,
+        minutes,
+      });
+      await refresh();
+      tg?.HapticFeedback?.impactOccurred?.('light');
+    } catch (e) {
+      showError(e.message || 'Ошибка создания сбора');
+    } finally {
+      btnCreate.disabled = false;
+    }
+  };
 
   function formatTime(iso) {
     return new Date(iso).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
@@ -147,6 +166,9 @@
           setTimeout(tick, 1000);
         }
         tick();
+        const cancelBtn = document.getElementById('btn-cancel');
+        cancelBtn.style.display = data.initiatorId === user.id ? 'flex' : 'none';
+        cancelBtn.onclick = cancelCollection;
         show('confirmed');
         return;
       }
@@ -192,6 +214,23 @@
     btn.disabled = true;
     try {
       await api.post('/api/collection/confirm', {
+        chatId: Number(chatId),
+        userId: user.id,
+      });
+      await refresh();
+      tg?.HapticFeedback?.impactOccurred?.('medium');
+    } catch (e) {
+      showError(e.message || 'Ошибка');
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  async function cancelCollection() {
+    const btn = document.getElementById('btn-cancel');
+    btn.disabled = true;
+    try {
+      await api.post('/api/collection/cancel', {
         chatId: Number(chatId),
         userId: user.id,
       });

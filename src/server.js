@@ -124,6 +124,26 @@ export function createApp(bot) {
     return res.json(getCollectionForApi(cid));
   });
 
+  // API: отменить сбор (только инициатор, пока таймер идёт)
+  app.post('/api/collection/cancel', async (req, res) => {
+    const { chatId, userId } = req.body;
+    if (chatId == null || userId == null) {
+      return res.status(400).json({ error: 'chatId, userId required' });
+    }
+    const cid = Number(chatId);
+    const uid = Number(userId);
+    const c = getCollection(cid);
+    if (!c) return res.status(404).json({ error: 'Сбор не найден' });
+    if (c.initiatorId !== uid) {
+      return res.status(403).json({ error: 'Отменить сбор может только инициатор' });
+    }
+    deleteCollection(cid);
+    try {
+      await bot.telegram.sendMessage(cid, '❌ Сбор на кофе отменён.');
+    } catch (e) {}
+    return res.json({ ok: true });
+  });
+
   // SPA: все пути отдаём index.html
   app.get('*', (req, res) => {
     res.sendFile(join(__dirname, '..', 'public', 'index.html'));
