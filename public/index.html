@@ -92,13 +92,12 @@
       min-height: 52px;
       padding: 0 14px;
       background: var(--app-bg) !important;
-      border: 1px solid var(--app-border);
+      border: 2px solid var(--app-border);
       border-radius: var(--app-radius-sm);
-      transition: border-color var(--app-transition), box-shadow var(--app-transition);
+      transition: border-color var(--app-transition);
     }
     .time-input-wrap:focus-within {
       border-color: var(--app-accent);
-      box-shadow: 0 0 0 2px var(--app-accent-soft);
     }
     .time-input-wrap .time-input {
       flex: 1;
@@ -106,6 +105,7 @@
       padding: 14px 16px;
       border: none;
       background: transparent !important;
+      outline: none;
       font-family: inherit;
       font-size: 1.5rem;
       font-weight: 600;
