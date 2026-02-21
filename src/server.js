@@ -17,11 +17,21 @@ export function createApp(bot) {
   const app = express();
   app.use(express.json());
 
-  // Webhook для бота (до статики, чтобы не перехватывал GET). При наличии BASE_URL вызывающий код выставит setWebhook и не будет вызывать launch().
-  app.use(WEBHOOK_PATH, bot.webhookCallback(WEBHOOK_PATH));
+  // Webhook для бота: именно POST и полный путь в req.url, иначе Telegraf не принимает запрос (filter сравнивает req.url с path).
+  app.post(WEBHOOK_PATH, bot.webhookCallback(WEBHOOK_PATH));
 
   // Статика Mini App
   app.use(express.static(join(__dirname, '..', 'public')));
+
+  // Проверка webhook (откройте в браузере после деплоя): видно, что Telegram знает ваш URL
+  app.get('/api/webhook-info', async (_req, res) => {
+    try {
+      const info = await bot.telegram.getWebhookInfo();
+      res.json({ ok: true, url: info.url || null, pending: info.pending_update_count });
+    } catch (e) {
+      res.status(500).json({ ok: false, error: String(e.message) });
+    }
+  });
 
   // API: текущий сбор для чата
   app.get('/api/collection', (req, res) => {
