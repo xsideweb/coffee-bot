@@ -90,27 +90,54 @@
       margin: 0 0 12px;
     }
 
-    .time-picker-row {
+    .card-time { padding: 24px; }
+    .time-picker {
       display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    .time-input {
-      width: 100%;
-      padding: 14px 16px;
-      border: 2px solid rgba(255,255,255,0.15);
-      border-radius: var(--app-radius-sm);
-      font-family: inherit;
-      font-size: 1.25rem;
-      font-weight: 600;
+      align-items: center;
+      gap: 16px;
+      min-height: 72px;
+      padding: 16px 20px;
       background: var(--app-bg);
-      color: var(--app-text);
-      transition: border-color var(--app-transition);
+      border: 2px solid rgba(255,255,255,0.12);
+      border-radius: var(--app-radius);
+      cursor: pointer;
+      transition: border-color var(--app-transition), box-shadow var(--app-transition);
+      position: relative;
     }
-    .time-input:focus {
-      outline: none;
+    .time-picker:focus-within {
       border-color: var(--app-accent);
+      box-shadow: 0 0 0 3px var(--app-accent-soft);
     }
+    .time-picker-icon {
+      font-size: 28px;
+      line-height: 1;
+      opacity: 0.9;
+    }
+    .time-picker-value {
+      flex: 1;
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      font-variant-numeric: tabular-nums;
+      color: var(--app-text);
+    }
+    .time-picker-value.placeholder { color: var(--app-text-muted); font-weight: 500; }
+    .time-input {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    .time-input::-webkit-calendar-picker-indicator { cursor: pointer; }
+    .time-picker-hint {
+      margin: 10px 0 0;
+      font-size: 0.8rem;
+      color: var(--app-text-muted);
+    }
+    .btn-create { margin-top: 20px; }
     .btn-cancel {
       width: 100%;
       margin-top: 12px;
@@ -242,12 +269,15 @@
         <h1>Сбор на кофе</h1>
         <p>Укажите время встречи</p>
       </div>
-      <div class="card">
+      <div class="card card-time">
         <p class="card-title">Во сколько встречаемся?</p>
-        <div class="time-picker-row">
-          <input type="time" id="time-input" class="time-input" min="" step="300">
-          <button type="button" class="btn btn-primary" id="btn-create">Создать сбор</button>
-        </div>
+        <label class="time-picker">
+          <span class="time-picker-icon" aria-hidden="true">🕐</span>
+          <span class="time-picker-value" id="time-display">Выберите время</span>
+          <input type="time" id="time-input" class="time-input" min="" step="300" aria-label="Время встречи">
+        </label>
+        <p class="time-picker-hint">Нажмите на поле, чтобы выбрать часы и минуты</p>
+        <button type="button" class="btn btn-primary btn-create" id="btn-create">Создать сбор</button>
       </div>
     </div>
     <div id="screen-vote" class="screen">

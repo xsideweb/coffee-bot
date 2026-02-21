@@ -71,6 +71,7 @@
   }
 
   const timeInput = document.getElementById('time-input');
+  const timeDisplay = document.getElementById('time-display');
   const btnCreate = document.getElementById('btn-create');
 
   function setTimeInputMin() {
@@ -82,6 +83,21 @@
     timeInput.min = h + ':' + m;
   }
   setTimeInputMin();
+
+  function updateTimeDisplay() {
+    const v = timeInput.value;
+    if (!v) {
+      timeDisplay.textContent = 'Выберите время';
+      timeDisplay.classList.add('placeholder');
+      return;
+    }
+    const [h, min] = v.split(':');
+    timeDisplay.textContent = h + ':' + min;
+    timeDisplay.classList.remove('placeholder');
+  }
+  timeInput.addEventListener('input', updateTimeDisplay);
+  timeInput.addEventListener('change', updateTimeDisplay);
+  updateTimeDisplay();
 
   function minutesFromTimeInput() {
     const [h, min] = (timeInput.value || '').split(':').map(Number);
@@ -154,16 +170,20 @@
         document.getElementById('confirmed-meta').textContent =
           'Встречаемся в ' + formatTime(data.at);
         const countdown = document.getElementById('countdown');
+        function formatRemaining(ms) {
+          if (ms <= 0) return '☕ Время!';
+          const totalMin = Math.floor(ms / 60000);
+          const h = Math.floor(totalMin / 60);
+          const m = totalMin % 60;
+          if (h >= 1) return h + ' ч ' + m + ' мин';
+          if (m >= 1) return m + ' мин';
+          const sec = Math.ceil(ms / 1000);
+          return sec + ' сек';
+        }
         function tick() {
           const left = new Date(data.at) - Date.now();
-          if (left <= 0) {
-            countdown.textContent = '☕ Время!';
-            return;
-          }
-          const min = Math.floor(left / 60000);
-          const sec = Math.floor((left % 60000) / 1000);
-          countdown.textContent = min + ' мин ' + sec + ' сек';
-          setTimeout(tick, 1000);
+          countdown.textContent = formatRemaining(left);
+          if (left > 0) setTimeout(tick, left > 60000 ? 60000 : 1000);
         }
         tick();
         const cancelBtn = document.getElementById('btn-cancel');

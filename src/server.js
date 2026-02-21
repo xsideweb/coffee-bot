@@ -52,6 +52,7 @@ export function createApp(bot) {
       return res.status(409).json({ error: 'Сбор уже создан' });
     }
     const at = new Date(Date.now() + Number(minutes) * 60 * 1000);
+    const atStr = at.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
     setCollection(cid, {
       initiatorId: Number(initiatorId),
       initiatorName,
@@ -64,7 +65,7 @@ export function createApp(bot) {
     try {
       await bot.telegram.sendMessage(
         cid,
-        `☕ Сбор на кофе через ${minutes} мин (в ${at.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}). Откройте приложение, чтобы проголосовать.`
+        `☕ Сбор на кофе в ${atStr}. Откройте приложение, чтобы проголосовать.`
       );
     } catch (e) {
       // группа может не существовать или бот не в ней

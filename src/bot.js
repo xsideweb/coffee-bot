@@ -181,7 +181,7 @@ export function setupBot(token, options = {}) {
       timerId: null,
     });
 
-    await ctx.answerCbQuery(`Сбор через ${formatMinutes(mins)}`);
+    await ctx.answerCbQuery(`Сбор в ${formatTime(at)}`);
     try {
       await ctx.deleteMessage();
     } catch (_) {}
