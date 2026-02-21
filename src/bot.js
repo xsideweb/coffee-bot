@@ -105,9 +105,9 @@ export function setupBot(token, options = {}) {
       return ctx.reply('Добавьте бота в группу и там напишите /start — появится кнопка для запуска приложения.');
     }
     if (baseUrl) {
-      await ctx.reply('☕ Нажмите кнопку ниже, чтобы открыть приложение «Сбор на кофе» — выбрать время, проголосовать и подтвердить сбор.', keyboardMiniApp(chatId, baseUrl));
+      await ctx.reply('☕ Нажмите кнопку ниже, чтобы открыть приложение «Сбор на кофе».', keyboardMiniApp(chatId, baseUrl));
     } else {
-      await ctx.reply('Нажмите, чтобы начать сбор на кофе:', keyboardStartCollection());
+      await ctx.reply('Нажмите кнопку для сбора в чате (Mini App: задайте BASE_URL на сервере и перезапустите).', keyboardStartCollection());
     }
   };
 
