@@ -3,12 +3,12 @@ import { getCollection, setCollection, deleteCollection, setTimer } from './stat
 
 const MINUTES_OPTIONS = [15, 30, 45, 60];
 
-/** Клавиатура с кнопкой Mini App (требуется baseUrl). Формат без лишних полей — иначе Telegram: BUTTON_TYPE_INVALID */
-function keyboardMiniApp(chatId, baseUrl) {
+/** Сырой reply_markup для кнопки Mini App — без Telegraf Markup, иначе Telegram может вернуть BUTTON_TYPE_INVALID */
+function getMiniAppReplyMarkup(chatId, baseUrl) {
   const url = `${baseUrl.replace(/\/$/, '')}?chatId=${chatId}`;
-  return Markup.inlineKeyboard([
-    [{ text: '☕ Сбор на кофе', web_app: { url } }],
-  ]);
+  return {
+    inline_keyboard: [[{ text: '☕ Сбор на кофе', web_app: { url } }]],
+  };
 }
 
 function formatTime(date) {
@@ -107,7 +107,9 @@ export function setupBot(token, options = {}) {
         return await ctx.reply('Добавьте бота в группу и там напишите /start — появится кнопка для запуска приложения.');
       }
       if (baseUrl) {
-        await ctx.reply('☕ Нажмите кнопку ниже, чтобы открыть приложение «Сбор на кофе».', keyboardMiniApp(chatId, baseUrl));
+        await ctx.telegram.sendMessage(chatId, '☕ Нажмите кнопку ниже, чтобы открыть приложение «Сбор на кофе».', {
+          reply_markup: getMiniAppReplyMarkup(chatId, baseUrl),
+        });
       } else {
         await ctx.reply('Нажмите кнопку для сбора в чате (Mini App: задайте BASE_URL на сервере и перезапустите).', keyboardStartCollection());
       }
