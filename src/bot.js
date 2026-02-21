@@ -124,7 +124,7 @@ export function setupBot(token, options = {}) {
   };
 
   bot.command('start', sendAppButton);
-  bot.command('coffee', sendAppButton);
+  bot.command('cult', sendAppButton);
   bot.command('app', sendAppButton);
   bot.catch((err, ctx) => {
     console.error('Ошибка бота:', err.message || err, 'updateType:', ctx?.updateType);

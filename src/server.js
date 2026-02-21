@@ -89,7 +89,7 @@ export function createApp(bot, options = {}) {
     if (baseUrl) {
       const username = await getBotUsername();
       const appLink = `https://t.me/${username}?startapp=${cid}`;
-      text = `Срочный сбор в Культ! Ответь в приложении! <a href="${appLink}">${appLink}</a>`;
+      text = `Срочный сбор в Культ! Ответь в <a href="${appLink}">приложении</a>!`;
     } else {
       text = `Срочный сбор в Культ в ${atStr}. Откройте приложение, чтобы ответить.`;
     }
