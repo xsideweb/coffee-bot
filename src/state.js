@@ -1,7 +1,6 @@
 /**
  * Состояние активных сборов на кофе (в памяти).
- * key: chatId (группа)
- * value: { initiatorId, initiatorName, at, messageId, votes, confirmed, timerId }
+ * value: { initiatorId, initiatorName, at, messageId, votes, confirmed, timerId, timeZone? }
  */
 const collections = new Map();
 
@@ -37,6 +36,7 @@ export function getCollectionForApi(chatId) {
     initiatorId: c.initiatorId,
     initiatorName: c.initiatorName,
     at: c.at.toISOString(),
+    timeZone: c.timeZone || undefined,
     votes,
     confirmed: c.confirmed,
   };

@@ -71,56 +71,60 @@
   }
 
   const timeInput = document.getElementById('time-input');
-  const timeDisplay = document.getElementById('time-display');
   const btnCreate = document.getElementById('btn-create');
 
-  function setTimeInputMin() {
-    const now = new Date();
-    const minMins = 5;
-    const next = new Date(now.getTime() + minMins * 60 * 1000);
-    const h = String(next.getHours()).padStart(2, '0');
-    const m = String(next.getMinutes()).padStart(2, '0');
-    timeInput.min = h + ':' + m;
-  }
-  setTimeInputMin();
-
-  function updateTimeDisplay() {
-    const v = timeInput.value;
-    if (!v) {
-      timeDisplay.textContent = 'Выберите время';
-      timeDisplay.classList.add('placeholder');
-      return;
+  function getCreatorTimeZone() {
+    try {
+      return Intl.DateTimeFormat().resolvedOptions().timeZone || undefined;
+    } catch (_) {
+      return undefined;
     }
-    const [h, min] = v.split(':');
-    timeDisplay.textContent = h + ':' + min;
-    timeDisplay.classList.remove('placeholder');
   }
-  timeInput.addEventListener('input', updateTimeDisplay);
-  timeInput.addEventListener('change', updateTimeDisplay);
-  updateTimeDisplay();
 
-  function minutesFromTimeInput() {
-    const [h, min] = (timeInput.value || '').split(':').map(Number);
-    if (h == null || min == null || isNaN(h) || isNaN(min)) return null;
-    const now = new Date();
-    let target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, min, 0);
-    if (target <= now) target = new Date(target.getTime() + 24 * 60 * 60 * 1000);
-    return Math.round((target - now) / 60000);
+  function parseTimeHHMM(str) {
+    const s = (str || '').trim().replace(/\s/g, '');
+    const match = /^(\d{1,2}):(\d{2})$/.exec(s);
+    if (!match) return null;
+    const h = parseInt(match[1], 10);
+    const m = parseInt(match[2], 10);
+    if (h < 0 || h > 23 || m < 0 || m > 59) return null;
+    return { h, m };
   }
+
+  function atFromLocalHHMM(h, m) {
+    const now = new Date();
+    let target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, 0);
+    if (target <= now) target = new Date(target.getTime() + 24 * 60 * 60 * 1000);
+    return target.toISOString();
+  }
+
+  timeInput.addEventListener('input', function () {
+    let v = this.value.replace(/\D/g, '');
+    if (v.length >= 2 && !this.value.includes(':')) {
+      this.value = v.slice(0, 2) + ':' + v.slice(2, 4);
+    } else if (v.length <= 2) {
+      this.value = v;
+    } else {
+      this.value = v.slice(0, 2) + ':' + v.slice(2, 4);
+    }
+  });
 
   btnCreate.onclick = async () => {
-    const minutes = minutesFromTimeInput();
-    if (minutes == null || minutes < 1) {
-      showError('Выберите время встречи');
+    const parsed = parseTimeHHMM(timeInput.value);
+    if (!parsed) {
+      showError('Введите время в формате ЧЧ:ММ (например 14:30)');
       return;
     }
+    const at = atFromLocalHHMM(parsed.h, parsed.m);
+    const timeZone = getCreatorTimeZone();
     btnCreate.disabled = true;
     try {
       await api.post('/api/collection', {
         chatId: Number(chatId),
         initiatorId: user.id,
         initiatorName: user.name,
-        minutes,
+        at,
+        timeZone,
       });
       await refresh();
       tg?.HapticFeedback?.impactOccurred?.('light');
@@ -131,13 +135,27 @@
     }
   };
 
-  function formatTime(iso) {
-    return new Date(iso).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+  function formatTime(iso, timeZone) {
+    const opts = { hour: '2-digit', minute: '2-digit' };
+    if (timeZone) opts.timeZone = timeZone;
+    return new Date(iso).toLocaleTimeString('ru-RU', opts);
+  }
+
+  let votePollingId = null;
+  function startVotePolling() {
+    if (votePollingId) return;
+    votePollingId = setInterval(refresh, 3000);
+  }
+  function stopVotePolling() {
+    if (votePollingId) {
+      clearInterval(votePollingId);
+      votePollingId = null;
+    }
   }
 
   function renderVote(data) {
     document.getElementById('vote-meta').textContent =
-      'В ' + formatTime(data.at) + ' · Инициатор: ' + data.initiatorName;
+      'В ' + formatTime(data.at, data.timeZone) + ' · Инициатор: ' + data.initiatorName;
     const yesList = document.getElementById('vote-yes-list');
     const noList = document.getElementById('vote-no-list');
     const yesVotes = data.votes.filter((v) => v.vote === 'yes');
@@ -151,6 +169,7 @@
     const confirmBtn = document.getElementById('btn-confirm');
     confirmBtn.style.display = data.initiatorId === user.id ? 'flex' : 'none';
     confirmBtn.onclick = confirmCollection;
+    document.getElementById('btn-close').onclick = () => tg?.close?.();
   }
 
   function escapeHtml(s) {
@@ -163,12 +182,14 @@
     try {
       const data = await api.get('/api/collection?chatId=' + encodeURIComponent(chatId));
       if (!data) {
+        stopVotePolling();
         show('start');
         return;
       }
       if (data.confirmed) {
+        stopVotePolling();
         document.getElementById('confirmed-meta').textContent =
-          'Встречаемся в ' + formatTime(data.at);
+          'Встречаемся в ' + formatTime(data.at, data.timeZone);
         const countdown = document.getElementById('countdown');
         function formatRemaining(ms) {
           if (ms <= 0) return '☕ Время!';
@@ -194,7 +215,9 @@
       }
       renderVote(data);
       show('vote');
+      startVotePolling();
     } catch (e) {
+      stopVotePolling();
       showError(e.message || 'Ошибка загрузки');
     }
   }

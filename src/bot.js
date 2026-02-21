@@ -161,12 +161,14 @@ export function setupBot(token, options = {}) {
     }
 
     const at = new Date(Date.now() + mins * 60 * 1000);
+    const votes = new Map();
+    votes.set(from.id, { vote: 'yes', name });
     const message = await ctx.telegram.sendMessage(
       chatId,
       voteMessageText({
         initiatorName: name,
         at,
-        votes: new Map(),
+        votes,
       }),
       keyboardVote(chatId, from.id)
     );
@@ -176,7 +178,7 @@ export function setupBot(token, options = {}) {
       initiatorName: name,
       at,
       messageId: message.message_id,
-      votes: new Map(),
+      votes,
       confirmed: false,
       timerId: null,
     });

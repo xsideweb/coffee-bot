@@ -13,7 +13,16 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const WEBHOOK_PATH = '/telegram-webhook';
 
-export function createApp(bot) {
+function formatAtInTZ(date, timeZone) {
+  return new Date(date).toLocaleString('ru-RU', {
+    timeZone: timeZone || 'UTC',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
+export function createApp(bot, options = {}) {
+  const { baseUrl } = options;
   const app = express();
   app.use(express.json());
 
@@ -41,32 +50,42 @@ export function createApp(bot) {
     return res.json(data);
   });
 
-  // API: создать сбор
+  // API: создать сбор (at — ISO строка времени в часовом поясе создателя, timeZone — IANA, например Europe/Moscow)
   app.post('/api/collection', async (req, res) => {
-    const { chatId, initiatorId, initiatorName, minutes } = req.body;
-    if (chatId == null || initiatorId == null || !initiatorName || minutes == null) {
-      return res.status(400).json({ error: 'chatId, initiatorId, initiatorName, minutes required' });
+    const { chatId, initiatorId, initiatorName, at: atIso, timeZone } = req.body;
+    if (chatId == null || initiatorId == null || !initiatorName || !atIso) {
+      return res.status(400).json({ error: 'chatId, initiatorId, initiatorName, at (ISO) required' });
     }
     const cid = Number(chatId);
     if (getCollection(cid)) {
       return res.status(409).json({ error: 'Сбор уже создан' });
     }
-    const at = new Date(Date.now() + Number(minutes) * 60 * 1000);
-    const atStr = at.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+    const at = new Date(atIso);
+    if (Number.isNaN(at.getTime())) {
+      return res.status(400).json({ error: 'Некорректное время at' });
+    }
+    const votes = new Map();
+    votes.set(Number(initiatorId), { vote: 'yes', name: initiatorName });
     setCollection(cid, {
       initiatorId: Number(initiatorId),
       initiatorName,
       at,
       messageId: null,
-      votes: new Map(),
+      votes,
       confirmed: false,
       timerId: null,
+      timeZone: timeZone || undefined,
     });
+    const atStr = formatAtInTZ(at, timeZone);
+    let text;
+    if (baseUrl) {
+      const appLink = `${baseUrl}?chatId=${cid}`;
+      text = `☕ Сбор на кофе в ${atStr}. <a href="${appLink}">Откройте приложение</a>, чтобы проголосовать.`;
+    } else {
+      text = `☕ Сбор на кофе в ${atStr}. Откройте приложение, чтобы проголосовать.`;
+    }
     try {
-      await bot.telegram.sendMessage(
-        cid,
-        `☕ Сбор на кофе в ${atStr}. Откройте приложение, чтобы проголосовать.`
-      );
+      await bot.telegram.sendMessage(cid, text, baseUrl ? { parse_mode: 'HTML' } : undefined);
     } catch (e) {
       // группа может не существовать или бот не в ней
     }
@@ -105,7 +124,7 @@ export function createApp(bot) {
       return res.status(403).json({ error: 'Подтвердить может только инициатор' });
     }
     c.confirmed = true;
-    const atStr = c.at.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+    const atStr = formatAtInTZ(c.at, c.timeZone);
     const participants = [...c.votes.entries()].filter(([, v]) => v.vote === 'yes');
     const names = participants.map(([, v]) => v.name).join(', ');
     try {

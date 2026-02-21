@@ -12,7 +12,7 @@ const port = Number(process.env.PORT) || 3000;
 const baseUrl = (process.env.BASE_URL || '').replace(/\/$/, ''); // без завершающего слеша
 
 const bot = setupBot(token, { baseUrl });
-const app = createApp(bot);
+const app = createApp(bot, { baseUrl });
 
 const server = app.listen(port, async () => {
   console.log('☕ COFFEE_BOT v2 — Сервер на порту', port);
