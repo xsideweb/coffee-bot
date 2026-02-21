@@ -40,7 +40,7 @@
 3. Настройки:
    - **Build Command:** `npm install`
    - **Start Command:** `npm start`
-   - **Instance Type:** можно оставить Free.
+   - **Instance Type:** можно оставить Free.f
 4. В блоке **Environment** добавьте переменные:
    - `BOT_TOKEN` = токен от @BotFather  
    - `BASE_URL` = пока оставьте пустым или временное значение.

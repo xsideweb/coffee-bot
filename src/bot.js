@@ -3,11 +3,13 @@ import { getCollection, setCollection, deleteCollection, setTimer } from './stat
 
 const MINUTES_OPTIONS = [15, 30, 45, 60];
 
-/** Сырой reply_markup для кнопки Mini App — без Telegraf Markup, иначе Telegram может вернуть BUTTON_TYPE_INVALID */
+/** Кнопка Mini App: используем Reply Keyboard (keyboard), в группах с inline_keyboard Telegram часто возвращает BUTTON_TYPE_INVALID */
 function getMiniAppReplyMarkup(chatId, baseUrl) {
   const url = `${baseUrl.replace(/\/$/, '')}?chatId=${chatId}`;
   return {
-    inline_keyboard: [[{ text: '☕ Сбор на кофе', web_app: { url } }]],
+    keyboard: [[{ text: '☕ Сбор на кофе', web_app: { url } }]],
+    resize_keyboard: true,
+    one_time_keyboard: false,
   };
 }
 
