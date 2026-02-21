@@ -100,20 +100,28 @@ export function setupBot(token, options = {}) {
 
   // Сообщение с кнопкой запуска Mini App в группе
   const sendAppButton = async (ctx) => {
-    const chatId = ctx.chat.id;
-    if (ctx.chat.type === 'private') {
-      return ctx.reply('Добавьте бота в группу и там напишите /start — появится кнопка для запуска приложения.');
-    }
-    if (baseUrl) {
-      await ctx.reply('☕ Нажмите кнопку ниже, чтобы открыть приложение «Сбор на кофе».', keyboardMiniApp(chatId, baseUrl));
-    } else {
-      await ctx.reply('Нажмите кнопку для сбора в чате (Mini App: задайте BASE_URL на сервере и перезапустите).', keyboardStartCollection());
+    try {
+      const chatId = ctx.chat.id;
+      const chatType = ctx.chat.type;
+      if (chatType === 'private') {
+        return await ctx.reply('Добавьте бота в группу и там напишите /start — появится кнопка для запуска приложения.');
+      }
+      if (baseUrl) {
+        await ctx.reply('☕ Нажмите кнопку ниже, чтобы открыть приложение «Сбор на кофе».', keyboardMiniApp(chatId, baseUrl));
+      } else {
+        await ctx.reply('Нажмите кнопку для сбора в чате (Mini App: задайте BASE_URL на сервере и перезапустите).', keyboardStartCollection());
+      }
+    } catch (err) {
+      console.error('Ошибка при отправке кнопки в чат:', err.message || err);
     }
   };
 
   bot.command('start', sendAppButton);
   bot.command('coffee', sendAppButton);
   bot.command('app', sendAppButton);
+  bot.catch((err, ctx) => {
+    console.error('Ошибка бота:', err.message || err, 'updateType:', ctx?.updateType);
+  });
 
   // Показать кнопку "Сбор на кофе" при первом добавлении в группу можно через greeting
   bot.on('message', async (ctx, next) => {
