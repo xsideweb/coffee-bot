@@ -141,7 +141,7 @@ npm start
 3. **Bot Settings** → **Configure Mini App** (или **Configure Main Mini App** / **Enable Mini App**).
 4. Включите Mini App и укажите **URL** = ваш **BASE_URL** (например `https://coffee-bot-production.up.railway.app`), без слеша в конце.
 
-После этого в группе по **/start** бот пришлёт кнопку-ссылку вида `t.me/ваш_бот?startapp=ID_ЧАТА`. По нажатию откроется ваш Mini App с параметром чата. Документация: [Telegram Mini Apps](https://core.telegram.org/bots/webapps).
+После этого в группе по **/start** бот пришлёт кнопку **«☕ Сбор на кофе»** типа Mini App; по нажатию откроется ваше приложение с параметром чата в URL. Документация: [Telegram Mini Apps](https://core.telegram.org/bots/webapps).
 
 ### Шаг 7. (По желанию) Menu Button
 

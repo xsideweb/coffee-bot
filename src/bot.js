@@ -3,10 +3,10 @@ import { getCollection, setCollection, deleteCollection, setTimer } from './stat
 
 const MINUTES_OPTIONS = [15, 30, 45, 60];
 
-/** Inline-кнопка со ссылкой t.me/bot?startapp=chatId — открывает Main Mini App с параметром. Без web_app, чтобы не было BUTTON_TYPE_INVALID. */
-function getMiniAppInlineMarkup(chatId, botUsername) {
-  const url = `https://t.me/${botUsername}?startapp=${chatId}`;
-  return Markup.inlineKeyboard([[Markup.button.url('☕ Сбор на кофе', url)]]);
+/** Inline-кнопка Mini App: web_app с URL приложения и chatId в query (корректный тип кнопки для Telegram). */
+function getMiniAppInlineMarkup(chatId, baseUrl) {
+  const url = baseUrl.includes('?') ? `${baseUrl}&chatId=${chatId}` : `${baseUrl}?chatId=${chatId}`;
+  return Markup.inlineKeyboard([[Markup.button.webApp('☕ Сбор на кофе', url)]]);
 }
 
 function formatTime(date) {
@@ -95,7 +95,6 @@ function scheduleTimer(ctx, chatId, collection) {
 export function setupBot(token, options = {}) {
   const { baseUrl } = options;
   const bot = new Telegraf(token);
-  let cachedBotUsername = null;
 
   const sendAppButton = async (ctx) => {
     try {
@@ -105,11 +104,7 @@ export function setupBot(token, options = {}) {
         return await ctx.reply('Добавьте бота в группу и там напишите /start — появится кнопка для запуска приложения.');
       }
       if (baseUrl) {
-        if (!cachedBotUsername) {
-          const me = await ctx.telegram.getMe();
-          cachedBotUsername = me.username;
-        }
-        await ctx.reply('☕ Нажмите кнопку ниже, чтобы открыть приложение «Сбор на кофе».', getMiniAppInlineMarkup(chatId, cachedBotUsername));
+        await ctx.reply('☕ Нажмите кнопку ниже, чтобы открыть приложение «Сбор на кофе».', getMiniAppInlineMarkup(chatId, baseUrl));
       } else {
         await ctx.reply('Нажмите кнопку для сбора в чате (Mini App: задайте BASE_URL на сервере и перезапустите).', keyboardStartCollection());
       }
