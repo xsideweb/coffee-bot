@@ -1,0 +1,118 @@
+import express from 'express';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+import {
+  getCollection,
+  getCollectionForApi,
+  setCollection,
+  deleteCollection,
+  setTimer,
+} from './state.js';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+export function createApp(bot) {
+  const app = express();
+  app.use(express.json());
+
+  // Статика Mini App
+  app.use(express.static(join(__dirname, '..', 'public')));
+
+  // API: текущий сбор для чата
+  app.get('/api/collection', (req, res) => {
+    const chatId = req.query.chatId;
+    if (chatId == null) return res.status(400).json({ error: 'chatId required' });
+    const data = getCollectionForApi(Number(chatId));
+    return res.json(data);
+  });
+
+  // API: создать сбор
+  app.post('/api/collection', async (req, res) => {
+    const { chatId, initiatorId, initiatorName, minutes } = req.body;
+    if (chatId == null || initiatorId == null || !initiatorName || minutes == null) {
+      return res.status(400).json({ error: 'chatId, initiatorId, initiatorName, minutes required' });
+    }
+    const cid = Number(chatId);
+    if (getCollection(cid)) {
+      return res.status(409).json({ error: 'Сбор уже создан' });
+    }
+    const at = new Date(Date.now() + Number(minutes) * 60 * 1000);
+    setCollection(cid, {
+      initiatorId: Number(initiatorId),
+      initiatorName,
+      at,
+      messageId: null,
+      votes: new Map(),
+      confirmed: false,
+      timerId: null,
+    });
+    try {
+      await bot.telegram.sendMessage(
+        cid,
+        `☕ Сбор на кофе через ${minutes} мин (в ${at.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}). Откройте приложение, чтобы проголосовать.`
+      );
+    } catch (e) {
+      // группа может не существовать или бот не в ней
+    }
+    return res.json(getCollectionForApi(cid));
+  });
+
+  // API: голос
+  app.post('/api/collection/vote', (req, res) => {
+    const { chatId, userId, userName, vote } = req.body;
+    if (chatId == null || userId == null || !vote) {
+      return res.status(400).json({ error: 'chatId, userId, vote required' });
+    }
+    if (vote !== 'yes' && vote !== 'no') {
+      return res.status(400).json({ error: 'vote must be yes or no' });
+    }
+    const cid = Number(chatId);
+    const c = getCollection(cid);
+    if (!c) return res.status(404).json({ error: 'Сбор не найден' });
+    if (c.confirmed) return res.status(409).json({ error: 'Голосование закрыто' });
+    const name = userName || `User ${userId}`;
+    c.votes.set(Number(userId), { vote, name });
+    return res.json(getCollectionForApi(cid));
+  });
+
+  // API: подтвердить сбор (только инициатор)
+  app.post('/api/collection/confirm', async (req, res) => {
+    const { chatId, userId } = req.body;
+    if (chatId == null || userId == null) {
+      return res.status(400).json({ error: 'chatId, userId required' });
+    }
+    const cid = Number(chatId);
+    const uid = Number(userId);
+    const c = getCollection(cid);
+    if (!c) return res.status(404).json({ error: 'Сбор не найден' });
+    if (c.initiatorId !== uid) {
+      return res.status(403).json({ error: 'Подтвердить может только инициатор' });
+    }
+    c.confirmed = true;
+    const atStr = c.at.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+    const participants = [...c.votes.entries()].filter(([, v]) => v.vote === 'yes');
+    const names = participants.map(([, v]) => v.name).join(', ');
+    try {
+      await bot.telegram.sendMessage(
+        cid,
+        `🔒 Сбор подтверждён! Встречаемся в ${atStr}. Участники: ${names || '—'}`
+      );
+    } catch (e) {}
+    const delay = Math.max(0, c.at - Date.now());
+    const timerId = setTimeout(async () => {
+      try {
+        await bot.telegram.sendMessage(cid, '☕ Время! Идём за кофе.');
+      } catch (e) {}
+      deleteCollection(cid);
+    }, delay);
+    setTimer(cid, timerId);
+    return res.json(getCollectionForApi(cid));
+  });
+
+  // SPA: все пути отдаём index.html
+  app.get('*', (req, res) => {
+    res.sendFile(join(__dirname, '..', 'public', 'index.html'));
+  });
+
+  return app;
+}
