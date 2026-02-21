@@ -18,6 +18,8 @@
     const params = new URLSearchParams(window.location.search);
     const fromUrl = params.get('chatId');
     if (fromUrl) return fromUrl;
+    const startParam = params.get('tgWebAppStartParam') || tg?.initDataUnsafe?.start_param;
+    if (startParam) return startParam;
     const unsafe = tg?.initDataUnsafe;
     if (unsafe?.chat?.id) return String(unsafe.chat.id);
     return null;

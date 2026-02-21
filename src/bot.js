@@ -3,14 +3,10 @@ import { getCollection, setCollection, deleteCollection, setTimer } from './stat
 
 const MINUTES_OPTIONS = [15, 30, 45, 60];
 
-/** Кнопка Mini App: используем Reply Keyboard (keyboard), в группах с inline_keyboard Telegram часто возвращает BUTTON_TYPE_INVALID */
-function getMiniAppReplyMarkup(chatId, baseUrl) {
-  const url = `${baseUrl.replace(/\/$/, '')}?chatId=${chatId}`;
-  return {
-    keyboard: [[{ text: '☕ Сбор на кофе', web_app: { url } }]],
-    resize_keyboard: true,
-    one_time_keyboard: false,
-  };
+/** Inline-кнопка со ссылкой t.me/bot?startapp=chatId — открывает Main Mini App с параметром. Без web_app, чтобы не было BUTTON_TYPE_INVALID. */
+function getMiniAppInlineMarkup(chatId, botUsername) {
+  const url = `https://t.me/${botUsername}?startapp=${chatId}`;
+  return Markup.inlineKeyboard([[Markup.button.url('☕ Сбор на кофе', url)]]);
 }
 
 function formatTime(date) {
@@ -99,8 +95,8 @@ function scheduleTimer(ctx, chatId, collection) {
 export function setupBot(token, options = {}) {
   const { baseUrl } = options;
   const bot = new Telegraf(token);
+  let cachedBotUsername = null;
 
-  // Сообщение с кнопкой запуска Mini App в группе
   const sendAppButton = async (ctx) => {
     try {
       const chatId = ctx.chat.id;
@@ -109,9 +105,11 @@ export function setupBot(token, options = {}) {
         return await ctx.reply('Добавьте бота в группу и там напишите /start — появится кнопка для запуска приложения.');
       }
       if (baseUrl) {
-        await ctx.telegram.sendMessage(chatId, '☕ Нажмите кнопку ниже, чтобы открыть приложение «Сбор на кофе».', {
-          reply_markup: getMiniAppReplyMarkup(chatId, baseUrl),
-        });
+        if (!cachedBotUsername) {
+          const me = await ctx.telegram.getMe();
+          cachedBotUsername = me.username;
+        }
+        await ctx.reply('☕ Нажмите кнопку ниже, чтобы открыть приложение «Сбор на кофе».', getMiniAppInlineMarkup(chatId, cachedBotUsername));
       } else {
         await ctx.reply('Нажмите кнопку для сбора в чате (Mini App: задайте BASE_URL на сервере и перезапустите).', keyboardStartCollection());
       }

@@ -40,8 +40,8 @@
 3. Настройки:
    - **Build Command:** `npm install`
    - **Start Command:** `npm start`
-   - **Instance Type:** можно оставить Free.f
-4. В блоке **Environment** добавьте переменные:
+   - **Instance Type:** можно оставить Free.
+f4. В блоке **Environment** добавьте переменные:
    - `BOT_TOKEN` = токен от @BotFather  
    - `BASE_URL` = пока оставьте пустым или временное значение.
 5. Нажмите **Create Web Service**. После деплоя Render покажет URL вида `https://ваше-имя.onrender.com`.
@@ -130,18 +130,23 @@ npm start
 
 Если кнопка не открывает приложение или пишет ошибку — проверьте, что **BASE_URL** в `.env` (или на хостинге) совпадает с реальным HTTPS-адресом и что сервер запущен и доступен из интернета.
 
-### Шаг 6. (По желанию) Кнопка в профиле бота (Menu Button)
+### Шаг 6. Main Mini App в BotFather (обязательно для кнопки в группе)
 
-Чтобы Mini App можно было открывать из профиля бота:
+Чтобы кнопка «Сбор на кофе» в группе открывала приложение, нужно указать URL Mini App в BotFather:
 
 1. Откройте [@BotFather](https://t.me/BotFather).
-2. Отправьте **`/mybots`** → выберите вашего бота.
-3. **Bot Settings** → **Menu Button** → **Configure menu button**.
-4. Укажите:
-   - **URL:** ваш **BASE_URL** (тот же, что в .env), например `https://your-app.up.railway.app`.
-   - **Текст кнопки:** например `Открыть сбор на кофе`.
+2. **`/mybots`** → выберите вашего бота.
+3. **Bot Settings** → **Configure Mini App** (или **Configure Main Mini App** / **Enable Mini App**).
+4. Включите Mini App и укажите **URL** = ваш **BASE_URL** (например `https://coffee-bot-production.up.railway.app`), без слеша в конце.
 
-В группе по-прежнему удобнее использовать кнопку под сообщением после **/start** (в URL уже подставляется chatId). Menu Button полезен для быстрого доступа из лички или профиля.
+После этого в группе по **/start** бот пришлёт кнопку-ссылку вида `t.me/ваш_бот?startapp=ID_ЧАТА`. По нажатию откроется ваш Mini App с параметром чата. Документация: [Telegram Mini Apps](https://core.telegram.org/bots/webapps).
+
+### Шаг 7. (По желанию) Menu Button
+
+Чтобы приложение можно было открывать из профиля бота:
+
+1. В BotFather: **Bot Settings** → **Menu Button** → **Configure menu button**.
+2. **URL:** тот же **BASE_URL**. **Текст:** например `Открыть сбор на кофе`.
 
 ---
 
