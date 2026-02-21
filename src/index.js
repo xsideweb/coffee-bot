@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import { setupBot } from './bot.js';
-import { createApp } from './server.js';
+import { createApp, getWebhookPath } from './server.js';
 
 const token = process.env.BOT_TOKEN;
 if (!token) {
@@ -9,22 +9,23 @@ if (!token) {
 }
 
 const port = Number(process.env.PORT) || 3000;
-const baseUrl = process.env.BASE_URL || ''; // Публичный URL Mini App (HTTPS), например https://your-app.up.railway.app
+const baseUrl = (process.env.BASE_URL || '').replace(/\/$/, ''); // без завершающего слеша
 
 const bot = setupBot(token, { baseUrl });
 const app = createApp(bot);
 
-const server = app.listen(port, () => {
+const server = app.listen(port, async () => {
   console.log('☕ Сервер запущен на порту', port);
   if (baseUrl) {
     console.log('   Mini App URL:', baseUrl);
+    const webhookUrl = `${baseUrl}${getWebhookPath()}`;
+    await bot.telegram.setWebhook(webhookUrl);
+    console.log('   Бот в режиме webhook:', webhookUrl);
   } else {
-    console.log('   BASE_URL не задан — бот работает без Mini App (только кнопки в чате).');
+    console.log('   BASE_URL не задан — бот в режиме polling (только один экземпляр).');
+    await bot.launch();
   }
-});
-
-bot.launch().then(() => {
-  console.log('☕ Бот запущен. Добавьте его в группу и отправьте /start');
+  console.log('☕ Добавьте бота в группу и отправьте /start');
 });
 
 function shutdown() {

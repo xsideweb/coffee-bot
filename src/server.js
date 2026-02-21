@@ -11,9 +11,14 @@ import {
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
+const WEBHOOK_PATH = '/telegram-webhook';
+
 export function createApp(bot) {
   const app = express();
   app.use(express.json());
+
+  // Webhook для бота (до статики, чтобы не перехватывал GET). При наличии BASE_URL вызывающий код выставит setWebhook и не будет вызывать launch().
+  app.use(WEBHOOK_PATH, bot.webhookCallback(WEBHOOK_PATH));
 
   // Статика Mini App
   app.use(express.static(join(__dirname, '..', 'public')));
@@ -115,4 +120,8 @@ export function createApp(bot) {
   });
 
   return app;
+}
+
+export function getWebhookPath() {
+  return WEBHOOK_PATH;
 }

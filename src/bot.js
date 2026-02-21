@@ -113,7 +113,8 @@ export function setupBot(token, options = {}) {
           cachedBotUsername = me.username;
         }
         const { text, extra } = getMiniAppMessage(chatId, cachedBotUsername);
-        await ctx.reply(text, extra);
+        // Только текст + HTML, без reply_markup — иначе в группе BUTTON_TYPE_INVALID
+        await ctx.reply(text, { ...extra, reply_markup: undefined });
       } else {
         await ctx.reply('Mini App: задайте BASE_URL на сервере и перезапустите. Пока можно использовать кнопки ниже.', keyboardStartCollection());
       }
