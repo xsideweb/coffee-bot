@@ -3,10 +3,13 @@ import { getCollection, setCollection, deleteCollection, setTimer } from './stat
 
 const MINUTES_OPTIONS = [15, 30, 45, 60];
 
-/** Inline-кнопка Mini App: web_app с URL приложения и chatId в query (корректный тип кнопки для Telegram). */
-function getMiniAppInlineMarkup(chatId, baseUrl) {
-  const url = baseUrl.includes('?') ? `${baseUrl}&chatId=${chatId}` : `${baseUrl}?chatId=${chatId}`;
-  return Markup.inlineKeyboard([[Markup.button.webApp('☕ Сбор на кофе', url)]]);
+/** В группах web_app-кнопка в inline-клавиатуре даёт BUTTON_TYPE_INVALID. Отправляем ссылку в тексте — по нажатию откроется Main Mini App с start_param. */
+function getMiniAppMessage(chatId, botUsername) {
+  const link = `https://t.me/${botUsername}?startapp=${chatId}`;
+  return {
+    text: `☕ Нажмите ссылку, чтобы открыть приложение «Сбор на кофе»:\n\n☕ <a href="${link}">Сбор на кофе</a>`,
+    extra: { parse_mode: 'HTML' },
+  };
 }
 
 function formatTime(date) {
@@ -95,21 +98,27 @@ function scheduleTimer(ctx, chatId, collection) {
 export function setupBot(token, options = {}) {
   const { baseUrl } = options;
   const bot = new Telegraf(token);
+  let cachedBotUsername = null;
 
   const sendAppButton = async (ctx) => {
     try {
       const chatId = ctx.chat.id;
       const chatType = ctx.chat.type;
       if (chatType === 'private') {
-        return await ctx.reply('Добавьте бота в группу и там напишите /start — появится кнопка для запуска приложения.');
+        return await ctx.reply('Добавьте бота в группу и там напишите /start — появится ссылка для запуска приложения.');
       }
       if (baseUrl) {
-        await ctx.reply('☕ Нажмите кнопку ниже, чтобы открыть приложение «Сбор на кофе».', getMiniAppInlineMarkup(chatId, baseUrl));
+        if (!cachedBotUsername) {
+          const me = await ctx.telegram.getMe();
+          cachedBotUsername = me.username;
+        }
+        const { text, extra } = getMiniAppMessage(chatId, cachedBotUsername);
+        await ctx.reply(text, extra);
       } else {
-        await ctx.reply('Нажмите кнопку для сбора в чате (Mini App: задайте BASE_URL на сервере и перезапустите).', keyboardStartCollection());
+        await ctx.reply('Mini App: задайте BASE_URL на сервере и перезапустите. Пока можно использовать кнопки ниже.', keyboardStartCollection());
       }
     } catch (err) {
-      console.error('Ошибка при отправке кнопки в чат:', err.message || err);
+      console.error('Ошибка при отправке сообщения в чат:', err.message || err);
     }
   };
 
